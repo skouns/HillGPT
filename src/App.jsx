@@ -10,7 +10,7 @@ function App() {
         Currently in private development by SBK
       </p>
       <div className="rounded-lg border border-blue-500 px-4 py-2 text-sm text-blue-300 bg-gray-800/60">
-        🚧 Work in Progress — Launching Soon 🚧
+        🚧 Work in Progress 🚧
       </div>
     </div>
   );
