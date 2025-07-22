@@ -4,7 +4,7 @@ function App() {
       <img
         src="/logo.png"
         alt="HillGPT logo"
-        className="w-20 h-20 object-contain"
+        className="w-16 h-16 object-contain"
       />
     </div>
   );
