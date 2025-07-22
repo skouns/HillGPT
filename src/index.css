@@ -1,3 +1,10 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 🔧 Enforce transparency across the board */
+html, body, #root {
+  background-color: transparent !important;
+  margin: 0;
+  padding: 0;
+}
