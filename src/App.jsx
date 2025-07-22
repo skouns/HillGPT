@@ -1,8 +1,10 @@
 function App() {
   return (
-    <div style={{ padding: "2rem", fontFamily: "sans-serif" }}>
-      <h1>🚀 StaffGPT</h1>
-      <p>Vercel deploy successful. UI coming soon...</p>
+    <div className="min-h-screen bg-gray-100 p-10 font-sans">
+      <h1 className="text-4xl font-bold text-blue-700">🎯 Tailwind Works!</h1>
+      <p className="text-lg mt-4 text-gray-600">
+        You’re ready to build the StaffGPT chat UI.
+      </p>
     </div>
   );
 }
