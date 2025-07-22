@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ensure no white body background overrides your Tailwind setup */
-body {
-  @apply bg-transparent;
+/* 🔧 Enforce transparency across the board */
+html, body, #root {
+  background-color: transparent !important;
+  margin: 0;
+  padding: 0;
 }
