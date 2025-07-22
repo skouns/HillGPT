@@ -10,7 +10,7 @@ function App() {
         Currently in private development by SBK
       </p>
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex flex-col items-center justify-center px-6 text-center">
-        🚧 Work in Progress — Launching Soon 🚧
+        🚧 Work in Progress 🚧
       </div>
     </div>
   );
