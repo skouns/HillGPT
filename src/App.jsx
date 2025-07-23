@@ -1,4 +1,17 @@
+import React, { useState } from 'react';
+import { Analytics } from "@vercel/analytics/react";
 function App() {
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+    const newMessage = { sender: "user", text: input };
+    setMessages([...messages, newMessage]);
+    setInput("");
+    // Add AI response simulation here if desired
+  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center p-4">
       <div className="w-full max-w-3xl h-[85vh] flex flex-col rounded-xl border border-blue-600 bg-white/10 backdrop-blur-md shadow-xl overflow-hidden">
