@@ -14,7 +14,7 @@ function App() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white min-h-screen flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-4xl h-[90vh] flex flex-col rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
         <header className="px-6 py-4 border-b border-blue-700 bg-white/10">
           <h1 className="text-4xl font-bold text-white">HillGPT</h1>
