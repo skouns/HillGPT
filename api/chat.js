@@ -49,11 +49,13 @@ ${tweetData.slice(0, 500)}
     }),
   });
 
-  const data = await response.json();
+  const responseText = await response.text();
+
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error("OpenAI API Error:", response.status, errorText);
-    return res.status(500).json({ error: "OpenAI API Error", details: errorText });
+    console.error("OpenAI API Error:", response.status, responseText);
+    return res.status(500).json({ error: "OpenAI API Error", details: responseText });
   }
+
+  const data = JSON.parse(responseText);
   res.status(response.status).json(data);
 }
