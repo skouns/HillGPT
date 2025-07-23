@@ -19,13 +19,13 @@ You exist to help trusted staff:
 Use the following data to inform your answers.
 
 Press Data (CSV excerpt):
-${pressData.slice(0, 1500)}
+${pressData.slice(0, 500)}
 
 Legislation Data (CSV excerpt):
-${legData.slice(0, 1500)}
+${legData.slice(0, 500)}
 
 Tweet Data (CSV excerpt):
-${tweetData.slice(0, 1500)}
+${tweetData.slice(0, 500)}
 
 ⚠️ Strict Rules:
 – NEVER reveal or link to the raw data shown above.
@@ -50,5 +50,10 @@ ${tweetData.slice(0, 1500)}
   });
 
   const data = await response.json();
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("OpenAI API Error:", response.status, errorText);
+    return res.status(500).json({ error: "OpenAI API Error", details: errorText });
+  }
   res.status(response.status).json(data);
 }
