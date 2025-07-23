@@ -11,9 +11,6 @@ function App() {
     e.preventDefault();
     if (!input.trim()) return;
 
-    // Add user message
-    setMessages((prev) => [...prev, { sender: "user", text: input }]);
-
     // Placeholder bot response
     setMessages((prev) => [
       ...prev,
