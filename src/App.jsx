@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Analytics } from "@vercel/analytics/react";
+import React, { useState } from "react";
+
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -10,14 +10,14 @@ function App() {
     const newMessage = { sender: "user", text: input };
     setMessages([...messages, newMessage]);
     setInput("");
-    // Add AI response simulation here if desired
   };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex flex-col items-center justify-center px-4 py-6">
-      <div className="w-full max-w-3xl h-[85vh] flex flex-col rounded-xl border border-blue-600 bg-white/10 backdrop-blur-xl shadow-2xl overflow-hidden">
-        <header className="px-6 py-4 border-b border-blue-500 bg-white/10">
-          <h1 className="text-4xl font-bold text-white drop-shadow-md">HillGPT</h1>
-          <p className="text-sm text-blue-200 mt-1">Your assistant for Capitol Hill</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-6">
+      <div className="w-full max-w-4xl h-[90vh] flex flex-col rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
+        <header className="px-6 py-4 border-b border-blue-700 bg-white/10">
+          <h1 className="text-4xl font-bold text-white">HillGPT</h1>
+          <p className="text-sm text-blue-200">Your assistant for Capitol Hill</p>
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
@@ -37,7 +37,7 @@ function App() {
 
         <form
           onSubmit={handleSubmit}
-          className="flex items-center gap-3 px-6 py-4 border-t border-blue-500 bg-white/10"
+          className="flex items-center gap-3 px-6 py-4 border-t border-blue-700 bg-white/10"
         >
           <input
             type="text"
@@ -54,7 +54,6 @@ function App() {
           </button>
         </form>
       </div>
-      <Analytics />
     </div>
   );
 }
