@@ -4,8 +4,9 @@ import path from 'path';
 export default async function handler(req, res) {
   const { messages } = req.body;
 
-  const pressData = fs.readFileSync(path.join(process.cwd(), 'data', 'press.csv'), 'utf-8');
-  const legislation = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'data', 'legislation.json'), 'utf-8'));
+  const pressData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
+  const legData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
+  const tweetData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
 
   const systemPrompt = `
 You are HillGPT, a knowledgeable assistant trained on Senator Bill Cassidy’s public communications and legislative record.
