@@ -1,3 +1,5 @@
+import { Analytics } from "@vercel/analytics/next"
+
 function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center">
@@ -6,6 +8,7 @@ function App() {
         alt="HillGPT logo"
         className="w-16 h-16 object-contain"
       />
+      <Analytics />
     </div>
   );
 }
