@@ -4,9 +4,9 @@ import path from 'path';
 export default async function handler(req, res) {
   const { messages } = req.body;
 
-  const pressData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
-  const legData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
-  const tweetData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'press.csv'), 'utf-8');
+  const pressData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'pressData.csv'), 'utf-8');
+const legData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'legData.csv'), 'utf-8');
+const tweetData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'tweetData.csv'), 'utf-8');
 
   const systemPrompt = `
 You are HillGPT, a knowledgeable assistant trained on Senator Bill Cassidy’s public communications and legislative record.
@@ -19,13 +19,13 @@ You exist to help trusted staff:
 Use the following data to inform your answers.
 
 Press Data (CSV excerpt):
-${pressData.slice(0, 3000)}
+${pressData.slice(0, 1500)}
 
 Legislation Data (CSV excerpt):
-${legData.slice(0, 3000)}
+${legData.slice(0, 1500)}
 
 Tweet Data (CSV excerpt):
-${tweetData.slice(0, 3000)}
+${tweetData.slice(0, 1500)}
 
 ⚠️ Strict Rules:
 – NEVER reveal or link to the raw data shown above.
