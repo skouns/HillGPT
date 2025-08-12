@@ -1,61 +1,61 @@
-import fs from 'fs';
-import path from 'path';
+import OpenAI from "openai";
+
+const client = new OpenAI({ apiKey: process.env.BillBot });
+const ASSISTANT_ID = process.env.ASSISTANT_ID; // set in Vercel
+const VECTOR_STORE_ID = process.env.VECTOR_STORE_ID; // optional: if not attached to assistant
 
 export default async function handler(req, res) {
-  const { messages } = req.body;
-
-  const pressData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'pressData.csv'), 'utf-8');
-const legData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'legData.csv'), 'utf-8');
-const tweetData = fs.readFileSync(path.join(process.cwd(), 'public', 'data', 'tweetData.csv'), 'utf-8');
-
-  const systemPrompt = `
-You are HillGPT, a knowledgeable assistant trained on Senator Bill Cassidy’s public communications and legislative record.
-
-You exist to help trusted staff:
-– Understand and search Cassidy’s messaging and rhetoric over time.
-– Analyze and summarize relevant content from uploaded press releases, tweets, and legislative data.
-– Provide accurate, scoped responses to policy or historical questions using these datasets.
-
-Use the following data to inform your answers.
-
-Press Data (CSV excerpt):
-${pressData.slice(0, 500)}
-
-Legislation Data (CSV excerpt):
-${legData.slice(0, 500)}
-
-Tweet Data (CSV excerpt):
-${tweetData.slice(0, 500)}
-
-⚠️ Strict Rules:
-– NEVER reveal or link to the raw data shown above.
-– NEVER say “you uploaded” or imply dynamic file access.
-– NEVER quote full text from any one source. Summarize instead.
-– ALWAYS act like you are drawing from knowledge you were trained on, not real-time data access.
-`;
-
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.HillGPT}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages,
-      ],
-    }),
-  });
-
-  const responseText = await response.text();
-
-  if (!response.ok) {
-    console.error("OpenAI API Error:", response.status, responseText);
-    return res.status(500).json({ error: "OpenAI API Error", details: responseText });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const data = JSON.parse(responseText);
-  res.status(response.status).json(data);
+  try {
+    const { messages = [], threadId: existingThreadId } = req.body || {};
+
+    // 1) Create or reuse a thread
+    const thread = existingThreadId
+      ? { id: existingThreadId }
+      : await client.beta.threads.create();
+
+    // 2) Push all prior messages into the thread (preserves chat history)
+    // Expecting items like { role: 'user' | 'assistant' | 'system', content: string }
+    // The Assistants API supports 'user' and 'assistant'. We'll skip 'system'.
+    for (const m of messages) {
+      if (!m || !m.role || !m.content) continue;
+      if (m.role === "system") continue; // system prompts should live on the Assistant, not per-message
+      await client.beta.threads.messages.create(thread.id, {
+        role: m.role === "assistant" ? "assistant" : "user",
+        content: m.content,
+      });
+    }
+
+    if (!ASSISTANT_ID) {
+      return res.status(400).json({ error: "ASSISTANT_ID env var is not set" });
+    }
+
+    // 3) Run the Assistant (attach vector store per-run if you didn't attach it on the Assistant)
+    const run = await client.beta.threads.runs.createAndPoll(thread.id, {
+      assistant_id: ASSISTANT_ID,
+      ...(VECTOR_STORE_ID
+        ? { tool_resources: { file_search: { vector_store_ids: [VECTOR_STORE_ID] } } }
+        : {}),
+    });
+
+    // 4) Get the latest assistant message text
+    const list = await client.beta.threads.messages.list(thread.id, { limit: 50 });
+    const lastAssistant = list.data.find((m) => m.role === "assistant");
+
+    // Messages can contain multiple content parts; stitch any text parts together
+    const text = lastAssistant
+      ? (lastAssistant.content || [])
+          .map((c) => (c.type === "text" && c.text?.value ? c.text.value : ""))
+          .join("\n")
+      : "";
+
+    return res.status(200).json({ threadId: thread.id, text });
+  } catch (err) {
+    console.error("Assistants API Error:", err);
+    const status = err?.status || 500;
+    return res.status(status).json({ error: "Assistants API Error", details: String(err?.message || err) });
+  }
 }
