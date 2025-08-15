@@ -1,6 +1,13 @@
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+if (!process.env.BillBot) {
+  console.error('[ask-assistant] Missing OPENAI_API_KEY');
+}
+if (!process.env.ASSISTANT_ID) {
+  console.error('[ask-assistant] Missing ASSISTANT_ID');
+}
+
+const client = new OpenAI({ apiKey: process.env.BillBot });
 const ASSISTANT_ID = process.env.ASSISTANT_ID; // set in Vercel env
 const VECTOR_STORE_ID = process.env.VECTOR_STORE_ID; // optional
 
@@ -72,8 +79,17 @@ export default async function handler(req, res) {
     const cleanText = sanitizeAssistantText(text);
     return res.status(200).json({ threadId: thread.id, text: cleanText });
   } catch (err) {
-    console.error("Assistants API Error:", err);
-    const status = err?.status || 500;
-    return res.status(status).json({ error: "Assistants API Error", details: String(err?.message || err) });
+    // Surface as much structured info as possible for debugging
+    const status = err?.status || err?.response?.status || 500;
+    const payload = {
+      error: "Assistants API Error",
+      message: err?.message || null,
+      code: err?.code || null,
+      status,
+      openai: err?.response?.data || null,
+      stack: (process.env.NODE_ENV !== 'production' && (err?.stack || null)) || undefined,
+    };
+    console.error("Assistants API Error:", payload);
+    return res.status(status).json(payload);
   }
 }
