@@ -7,7 +7,18 @@ if (!process.env.ASSISTANT_ID) {
   console.error('[ask-assistant] Missing ASSISTANT_ID');
 }
 
-const client = new OpenAI({ apiKey: process.env.BillBot });
+const ASSISTANT_ID_MINI = process.env.ASSISTANT_ID_MINI || process.env.ASSISTANT_ID; // fallback to single assistant
+const ASSISTANT_ID_4O   = process.env.ASSISTANT_ID_4O || null;
+const ASSISTANT_ID_41   = process.env.ASSISTANT_ID_41 || null;
+
+function configuredTiers() {
+  return {
+    mini: !!ASSISTANT_ID_MINI,
+    o4:   !!ASSISTANT_ID_4O,
+    g41:  !!ASSISTANT_ID_41,
+  };
+}
+
 const ASSISTANT_ID = process.env.ASSISTANT_ID; // set in Vercel env
 const VECTOR_STORE_ID = process.env.VECTOR_STORE_ID; // optional
 
@@ -22,18 +33,55 @@ function sanitizeAssistantText(s) {
   return s;
 }
 
+// Simple heuristic to classify request; can be replaced with a model-based classifier later
+function pickTier(userText = "", currentTier = "mini") {
+  // escalate-only; never downgrade from a higher tier
+  const cur = currentTier === "41" ? 2 : currentTier === "4o" ? 1 : 0;
+
+  const hasCompare = /\b(compare|contrast|versus|vs\.|trade[- ]offs?)\b/i.test(userText);
+  const longQ = userText.length > 600;
+  const sensitive = /(social security|medicare|appropriations|immigration|border|abortion|gun|foreign policy|defense)/i.test(userText);
+  const multiPart = /\?|\.|;/.test(userText) && (userText.match(/\?|\.|;/g) || []).length > 2;
+
+  let tierScore = 0;
+  if (hasCompare) tierScore++;
+  if (longQ) tierScore++;
+  if (sensitive) tierScore++;
+  if (multiPart) tierScore++;
+
+  let proposed = tierScore >= 2 ? "4o" : "mini"; // default path
+  if (tierScore >= 3) proposed = "41"; // most complex
+
+  // enforce escalate-only relative to currentTier
+  const propRank = proposed === "41" ? 2 : proposed === "4o" ? 1 : 0;
+  const rank = Math.max(cur, propRank);
+  return rank === 2 ? "41" : rank === 1 ? "4o" : "mini";
+}
+
+function idForTier(tier) {
+  if (tier === "41" && ASSISTANT_ID_41) return ASSISTANT_ID_41;
+  if (tier === "4o"  && ASSISTANT_ID_4O) return ASSISTANT_ID_4O;
+  return ASSISTANT_ID_MINI; // fallback
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
   try {
-    const { messages = [], threadId: existingThreadId, message } = req.body || {};
+    const { messages = [], threadId: existingThreadId, message, modelTier } = req.body || {};
 
     // Normalize: if a single `message` was provided, convert it to messages[]
     const normalizedMessages = messages.length
       ? messages
       : (message ? [{ role: "user", content: message }] : []);
+
+    const latestUserText = [...normalizedMessages].reverse().find(m => m?.role === 'user')?.content || '';
+    // Choose tier using escalate-only policy; default to provided modelTier if any
+    const currentTier = (modelTier === '41' || modelTier === '4o' || modelTier === 'mini') ? modelTier : 'mini';
+    const nextTier = pickTier(latestUserText, currentTier);
+    const assistantIdForRun = idForTier(nextTier);
 
     if (!ASSISTANT_ID) {
       return res.status(400).json({ error: "ASSISTANT_ID env var is not set" });
@@ -56,7 +104,7 @@ export default async function handler(req, res) {
 
     // 3) Run the Assistant with strict runtime checklist
     const run = await client.beta.threads.runs.createAndPoll(thread.id, {
-      assistant_id: ASSISTANT_ID,
+      assistant_id: assistantIdForRun,
       ...(VECTOR_STORE_ID
         ? { tool_resources: { file_search: { vector_store_ids: [VECTOR_STORE_ID] } } }
         : {}),
@@ -77,7 +125,7 @@ export default async function handler(req, res) {
       : "";
 
     const cleanText = sanitizeAssistantText(text);
-    return res.status(200).json({ threadId: thread.id, text: cleanText });
+    return res.status(200).json({ threadId: thread.id, text: cleanText, modelTier: nextTier });
   } catch (err) {
     // Surface as much structured info as possible for debugging
     const status = err?.status || err?.response?.status || 500;
