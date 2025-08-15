@@ -10,7 +10,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages = [], threadId: existingThreadId } = req.body || {};
+    const { messages = [], threadId: existingThreadId, message } = req.body || {};
+
+    // Normalize: if a single `message` was provided, convert it to messages[]
+    const normalizedMessages = messages.length
+      ? messages
+      : (message ? [{ role: "user", content: message }] : []);
 
     // 1) Create or reuse a thread
     const thread = existingThreadId
@@ -20,7 +25,7 @@ export default async function handler(req, res) {
     // 2) Push all prior messages into the thread (preserves chat history)
     // Expecting items like { role: 'user' | 'assistant' | 'system', content: string }
     // The Assistants API supports 'user' and 'assistant'. We'll skip 'system'.
-    for (const m of messages) {
+    for (const m of normalizedMessages) {
       if (!m || !m.role || !m.content) continue;
       if (m.role === "system") continue; // system prompts should live on the Assistant, not per-message
       await client.beta.threads.messages.create(thread.id, {
