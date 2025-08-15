@@ -14,24 +14,46 @@ function App() {
     return '';
   });
 
+  const [modelTier, setModelTier] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hillgpt_model_tier') || 'mini';
+    }
+    return 'mini';
+  });
+
   useEffect(() => {
     if (threadId) {
       localStorage.setItem('hillgpt_thread_id', threadId);
     }
-  }, [threadId]);
+    if (modelTier) {
+      localStorage.setItem('hillgpt_model_tier', modelTier);
+    }
+  }, [threadId, modelTier]);
 
   // Frontend call that sends/receives the threadId
   async function talkToGPT(userMessage) {
     try {
+      // Calculate complexity
+      const keywords = ['bill', 'legislation', 'policy', 'history', 'dataset'];
+      const wordCount = userMessage.trim().split(/\s+/).length;
+      const containsKeyword = keywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+      const complexity = (wordCount > 20 || containsKeyword) ? "complex" : "simple";
+
       const response = await axios.post('/api/ask-assistant', {
         message: userMessage,
         threadId: threadId || undefined,
+        complexity: complexity,
+        modelTier: modelTier || 'mini',
       });
 
       const replyText = response.data?.text ?? '';
       const newThreadId = response.data?.threadId;
+      const usedTier = response.data?.modelTier;
       if (newThreadId && newThreadId !== threadId) {
         setThreadId(newThreadId);
+      }
+      if (usedTier && usedTier !== modelTier) {
+        setModelTier(usedTier);
       }
       return replyText;
     } catch (err) {
@@ -42,8 +64,10 @@ function App() {
 
   function handleNewChat() {
     setThreadId('');
+    setModelTier('mini');
     if (typeof window !== 'undefined') {
       localStorage.removeItem('hillgpt_thread_id');
+      localStorage.setItem('hillgpt_model_tier', 'mini');
     }
     setMessages([]);
   }
@@ -64,6 +88,11 @@ function App() {
           <div>
             <h1 className="text-4xl font-bold text-white">HillGPT</h1>
             <p className="text-sm text-blue-200">Your assistant for Capitol Hill</p>
+            <div className="mt-2">
+              <span className="inline-block px-2 py-1 rounded bg-blue-700 text-white text-xs font-semibold">
+                Model: {modelTier}
+              </span>
+            </div>
           </div>
           <button
             type="button"
