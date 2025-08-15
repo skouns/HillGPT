@@ -71,17 +71,37 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages = [], threadId: existingThreadId, message, modelTier } = req.body || {};
+    const { messages = [], threadId: existingThreadId, message, modelTier, complexity, forceTier } = req.body || {};
 
     // Normalize: if a single `message` was provided, convert it to messages[]
     const normalizedMessages = messages.length
       ? messages
       : (message ? [{ role: "user", content: message }] : []);
 
+    // Normalize forceTier and complexity hints from the frontend
+    const validTier = (t) => (t === 'mini' || t === '4o' || t === '41') ? t : null;
+    const forced = validTier(forceTier);
+    const hintedByComplexity = (complexity === 'complex') ? '4o' : 'mini';
+
     const latestUserText = [...normalizedMessages].reverse().find(m => m?.role === 'user')?.content || '';
-    // Choose tier using escalate-only policy; default to provided modelTier if any
-    const currentTier = (modelTier === '41' || modelTier === '4o' || modelTier === 'mini') ? modelTier : 'mini';
-    const nextTier = pickTier(latestUserText, currentTier);
+
+    // If the client explicitly forces a tier, use it as-is for this turn
+    if (forced) {
+      var nextTier = forced;
+    } else {
+      // Otherwise, pick purely from the latest message content (allowing downgrade)
+      // Use complexity hint as a nudge; fall back to heuristic
+      const proposedFromHeuristic = pickTier(latestUserText, 'mini');
+      const proposedFromHint = hintedByComplexity; // 'mini' or '4o'
+
+      // Simple policy: if heuristic says '41', take it. Otherwise prefer the hint if it suggests '4o'.
+      let chosen = proposedFromHeuristic;
+      if (proposedFromHeuristic !== '41' && proposedFromHint === '4o') {
+        chosen = '4o';
+      }
+      var nextTier = chosen; // may be 'mini', '4o', or '41'
+    }
+
     const assistantIdForRun = idForTier(nextTier);
 
     if (!assistantIdForRun) {
