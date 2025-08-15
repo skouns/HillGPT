@@ -8,9 +8,9 @@ async function talkToGPT(userMessage) {
       message: userMessage,
     });
 
-    return response.data.choices[0].message.content;
+    return response.data.text;
   } catch (err) {
-    console.error("Error from OpenAI (via Vercel):", err.response?.data || err.message);
+    console.error("Error from OpenAI (via Vercel):", err);
     return "❌ There was an error fetching the response.";
   }
 }
