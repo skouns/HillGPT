@@ -1,23 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import './index.css';
 import axios from 'axios';
-
-async function talkToGPT(userMessage) {
-  try {
-    const response = await axios.post('/api/ask-assistant', {
-      message: userMessage,
-    });
-
-    return response.data.text;
-  } catch (err) {
-    console.error("Error from OpenAI (via Vercel):", err);
-    return "❌ There was an error fetching the response.";
-  }
-}
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+
+  // Persist a single Assistants API thread so the bot remembers context
+  const [threadId, setThreadId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hillgpt_thread_id') || '';
+    }
+    return '';
+  });
+
+  useEffect(() => {
+    if (threadId) {
+      localStorage.setItem('hillgpt_thread_id', threadId);
+    }
+  }, [threadId]);
+
+  // Frontend call that sends/receives the threadId
+  async function talkToGPT(userMessage) {
+    try {
+      const response = await axios.post('/api/ask-assistant', {
+        message: userMessage,
+        threadId: threadId || undefined,
+      });
+
+      const replyText = response.data?.text ?? '';
+      const newThreadId = response.data?.threadId;
+      if (newThreadId && newThreadId !== threadId) {
+        setThreadId(newThreadId);
+      }
+      return replyText;
+    } catch (err) {
+      console.error('Error from OpenAI (via Vercel):', err);
+      return '❌ There was an error fetching the response.';
+    }
+  }
+
+  function handleNewChat() {
+    setThreadId('');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('hillgpt_thread_id');
+    }
+    setMessages([]);
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -31,9 +60,19 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-4xl h-[90vh] flex flex-col rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
-        <header className="px-6 py-4 border-b border-blue-700 bg-white/10">
-          <h1 className="text-4xl font-bold text-white">HillGPT</h1>
-          <p className="text-sm text-blue-200">Your assistant for Capitol Hill</p>
+        <header className="px-6 py-4 border-b border-blue-700 bg-white/10 flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-white">HillGPT</h1>
+            <p className="text-sm text-blue-200">Your assistant for Capitol Hill</p>
+          </div>
+          <button
+            type="button"
+            onClick={handleNewChat}
+            className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
+            title="Start a fresh conversation"
+          >
+            New Chat
+          </button>
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
