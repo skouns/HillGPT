@@ -4,7 +4,7 @@ import axios from 'axios';
 
 async function talkToGPT(userMessage) {
   try {
-    const response = await axios.post('/api/ask-assistant', {
+    const response = await axios.post('/api/chat', {
       message: userMessage,
     });
 
