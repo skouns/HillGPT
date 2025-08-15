@@ -25,8 +25,8 @@ const VECTOR_STORE_ID = process.env.VECTOR_STORE_ID; // optional
 
 function sanitizeAssistantText(s) {
   if (!s) return s;
-  // Remove patterns like {12:16†Press_Releases.txt}
-  s = s.replace(/\{\d+:\d+†[^}]+\}/g, "");
+  // Remove patterns like {12:16†Press_Releases.txt} or  
+  s = s.replace(/(\{|\【)\d+:\d+†[^}\】]+(\}|\】)/g, "");
   // Remove bare filenames with common doc extensions
   s = s.replace(/\b[\w.-]+\.(txt|pdf|docx?|pptx?|xlsx?)\b/gi, "");
   // Collapse excessive whitespace
