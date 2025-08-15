@@ -6,6 +6,7 @@ if (!process.env.BillBot) {
 if (!process.env.ASSISTANT_ID) {
   console.error('[ask-assistant] Missing ASSISTANT_ID');
 }
+const client = new OpenAI({ apiKey: process.env.BillBot || process.env.OPENAI_API_KEY });
 
 const ASSISTANT_ID_MINI = process.env.ASSISTANT_ID_MINI || process.env.ASSISTANT_ID; // fallback to single assistant
 const ASSISTANT_ID_4O   = process.env.ASSISTANT_ID_4O || null;
@@ -83,8 +84,18 @@ export default async function handler(req, res) {
     const nextTier = pickTier(latestUserText, currentTier);
     const assistantIdForRun = idForTier(nextTier);
 
-    if (!ASSISTANT_ID) {
-      return res.status(400).json({ error: "ASSISTANT_ID env var is not set" });
+    if (!assistantIdForRun) {
+      return res.status(400).json({
+        error: "No assistant configured for selected tier",
+        details: {
+          nextTier,
+          expected_envs: [
+            'ASSISTANT_ID_MINI (or ASSISTANT_ID as fallback)',
+            'ASSISTANT_ID_4O (optional, for 4o tier)',
+            'ASSISTANT_ID_41 (optional, for 4.1 tier)'
+          ]
+        }
+      });
     }
 
     // 1) Create or reuse a thread
