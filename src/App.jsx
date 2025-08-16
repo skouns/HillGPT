@@ -193,7 +193,7 @@ function App() {
             <button
               type="button"
               onClick={handleNewChat}
-              className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
+              className="px-3 py-2 bg-blue-600 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
               title="Start a fresh conversation"
             >
               New Chat
@@ -201,7 +201,7 @@ function App() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="ml-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-semibold transition"
+              className="ml-2 px-3 py-2 bg-blue-600 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
               title="Sign out and clear verification"
             >
               Sign out
