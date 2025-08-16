@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import './index.css';
 import axios from 'axios';
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 function App() {
   const [messages, setMessages] = useState([]);
