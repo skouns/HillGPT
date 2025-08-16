@@ -260,6 +260,9 @@ function App() {
             className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
             ref={inputRef}
             autoComplete="new-password"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             readOnly
             onFocus={(e) => e.currentTarget.removeAttribute('readonly')}
             onInput={(e) => { e.currentTarget.dataset.touched = '1'; }}
