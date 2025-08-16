@@ -220,7 +220,7 @@ function App() {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`max-w-[80%] px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
+              className={`inline-block max-w-[75%] px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
                 msg.sender === "user"
                   ? "ml-auto bg-blue-600 text-white shadow-lg"
                   : "mr-auto bg-blue-300 text-blue-900 shadow-md"
