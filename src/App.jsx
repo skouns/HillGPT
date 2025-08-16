@@ -184,7 +184,7 @@ function App() {
             <h1 className="text-4xl font-bold text-white">HillGPT</h1>
             <p className="text-sm text-blue-200">Your assistant for Capitol Hill</p>
             <div className="mt-2">
-              <span className="inline-block px-2 py-1 rounded bg-blue-700 text-white text-xs font-semibold">
+              <span className="text-white text-xs font-semibold">
                 Model: {modelTier}
               </span>
             </div>
