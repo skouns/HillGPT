@@ -149,7 +149,7 @@ function App() {
 
   if (!verified) {
     return (
-      <div className="min-h-screen bg-[#fdfdf9] text-gray-900 flex items-center justify-center px-4 py-6">
+      <div className="min-h-screen bg-[#74001a] text-gray-900 flex items-center justify-center px-4 py-6">
         <div className="w-full max-w-md rounded-xl border border-blue-700 bg-blue-900 backdrop-blur-xl shadow-2xl overflow-hidden p-6">
           <h1 className="text-3xl text-white font-bold mb-2">HillGPT Access</h1>
           <p className="text-sm text-white mb-4">Restricted to congressional office staff. Verify with your office email.</p>
