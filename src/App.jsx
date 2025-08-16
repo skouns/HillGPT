@@ -216,14 +216,14 @@ function App() {
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
+        <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3 flex flex-col">
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`inline-block max-w-[75%] px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
+              className={`block w-fit max-w-[75%] break-words px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
                 msg.sender === "user"
-                  ? "ml-auto bg-blue-600 text-white shadow-lg"
-                  : "mr-auto bg-blue-300 text-blue-900 shadow-md"
+                  ? "self-end bg-blue-600 text-white shadow-lg"
+                  : "self-start bg-blue-300 text-blue-900 shadow-md"
               }`}
             >
               {msg.text}
