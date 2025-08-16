@@ -6,6 +6,23 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
 
+  const [email, setEmail] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hillgpt_email') || '';
+    }
+    return '';
+  });
+  const [verified, setVerified] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hillgpt_verified') === 'true';
+    }
+    return false;
+  });
+
+  const allowedDomains = [
+    'cassidy.senate.gov', // ONLY this exact domain is allowed
+  ];
+
   // Ref for chat input
   const inputRef = useRef(null);
   // Ref for auto-scrolling to bottom of messages
@@ -44,6 +61,40 @@ function App() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  function getDomain(addr='') {
+    const match = String(addr).toLowerCase().match(/@([^@]+)$/);
+    return match ? match[1] : '';
+  }
+
+  function handleVerify(e) {
+    e.preventDefault();
+    const domain = getDomain(email);
+    const ok = allowedDomains.some(d => domain === d); // exact match only, no subdomains
+    if (!ok) {
+      alert('Access restricted: please use a verified Senator office email.');
+      return;
+    }
+    setVerified(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hillgpt_verified', 'true');
+      localStorage.setItem('hillgpt_email', email);
+    }
+  }
+
+  function handleSignOut() {
+    setVerified(false);
+    setEmail('');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('hillgpt_verified');
+      localStorage.removeItem('hillgpt_email');
+      localStorage.removeItem('hillgpt_thread_id');
+      localStorage.removeItem('hillgpt_model_tier');
+    }
+    setThreadId('');
+    setModelTier('mini');
+    setMessages([]);
+  }
 
   // Frontend call that sends/receives the threadId
   async function talkToGPT(userMessage) {
@@ -96,6 +147,35 @@ function App() {
     setMessages(prev => [...prev, newMessage, { sender: "assistant", text: reply }]);
   };
 
+  if (!verified) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center px-4 py-6">
+        <div className="w-full max-w-md rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden p-6">
+          <h1 className="text-3xl font-bold mb-2">HillGPT Access</h1>
+          <p className="text-sm text-blue-200 mb-4">Restricted to Senator’s office staff. Verify with your office email.</p>
+          <form onSubmit={handleVerify} className="space-y-3">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@cassidy.senate.gov"
+              className="w-full rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
+              ref={inputRef}
+              required
+            />
+            <button
+              type="submit"
+              className="w-full px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white font-semibold transition"
+            >
+              Verify & Enter
+            </button>
+          </form>
+          <p className="text-xs text-blue-300 mt-4">Allowed domain: cassidy.senate.gov</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-4xl h-[90vh] flex flex-col rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden">
@@ -109,14 +189,24 @@ function App() {
               </span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleNewChat}
-            className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
-            title="Start a fresh conversation"
-          >
-            New Chat
-          </button>
+          <div className="flex items-center">
+            <button
+              type="button"
+              onClick={handleNewChat}
+              className="px-3 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white text-sm font-semibold transition"
+              title="Start a fresh conversation"
+            >
+              New Chat
+            </button>
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="ml-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm font-semibold transition"
+              title="Sign out and clear verification"
+            >
+              Sign out
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-y-auto px-6 py-4 space-y-3">
