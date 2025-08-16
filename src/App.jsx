@@ -235,6 +235,7 @@ function App() {
 
         <form
           onSubmit={handleSubmit}
+          autoComplete="off"
           className="flex items-center gap-3 px-6 py-4 border-t border-blue-700 bg-white/10"
         >
           <input
