@@ -72,7 +72,7 @@ function App() {
     const domain = getDomain(email);
     const ok = allowedDomains.some(d => domain === d); // exact match only, no subdomains
     if (!ok) {
-      alert('Access restricted: please use a verified Senator office email.');
+      alert('Access restricted: please use a verified congressional office email.');
       return;
     }
     setVerified(true);
@@ -158,7 +158,7 @@ function App() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Official email address"
+              placeholder="Congressional email address"
               className="w-full rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
               ref={inputRef}
               required
