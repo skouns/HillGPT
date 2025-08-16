@@ -100,14 +100,17 @@ export default async function handler(req, res) {
 
     const latestUserText = [...normalizedMessages].reverse().find(m => m?.role === 'user')?.content || '';
 
+    let proposedFromHeuristic = null;
+    let proposedFromHint = null;
+
     // If the client explicitly forces a tier, use it as-is for this turn
     if (forced) {
       var nextTier = forced;
     } else {
       // Otherwise, pick purely from the latest message content (allowing downgrade)
       // Use complexity hint as a nudge; fall back to heuristic
-      const proposedFromHeuristic = pickTier(latestUserText, 'mini');
-      const proposedFromHint = hintedByComplexity; // 'mini' or '4o'
+      proposedFromHeuristic = pickTier(latestUserText, 'mini');
+      proposedFromHint = hintedByComplexity; // 'mini' or '4o'
 
       // Simple policy: if heuristic says '41', take it. Otherwise prefer the hint if it suggests '4o'.
       let chosen = proposedFromHeuristic;
@@ -117,7 +120,7 @@ export default async function handler(req, res) {
       var nextTier = chosen; // may be 'mini', '4o', or '41'
     }
 
-    console.log(`[handler] Latest User Text: "${latestUserText}", Proposed Heuristic: "${proposedFromHeuristic}", Proposed Hint: "${hintedByComplexity}", Final Chosen Tier: "${nextTier}"`);
+    console.log(`[handler] Latest User Text: "${latestUserText}", Proposed Heuristic: "${proposedFromHeuristic}", Proposed Hint: "${proposedFromHint}", Final Chosen Tier: "${nextTier}"`);
 
     const assistantIdForRun = idForTier(nextTier);
 
