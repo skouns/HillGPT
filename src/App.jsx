@@ -149,7 +149,7 @@ function App() {
 
   if (!verified) {
     return (
-      <div className="min-h-screen bg-[#f8f8f5] text-gray-900 flex items-center justify-center px-4 py-6">
+      <div className="min-h-screen bg-[#fdfdf9] text-gray-900 flex items-center justify-center px-4 py-6">
         <div className="w-full max-w-md rounded-xl border border-blue-700 bg-blue-900/40 backdrop-blur-xl shadow-2xl overflow-hidden p-6">
           <h1 className="text-3xl font-bold mb-2">HillGPT Access</h1>
           <p className="text-sm text-blue-200 mb-4">Restricted to congressional office staff. Verify with your office email.</p>
@@ -177,7 +177,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f8f5] text-gray-900 flex items-center justify-center px-4 py-6">
+    <div className="min-h-screen bg-[#fdfdf9] text-gray-900 flex items-center justify-center px-4 py-6">
       <div className="w-full max-w-4xl h-[90vh] flex flex-col rounded-xl border border-blue-700 bg-blue-900/40 backdrop-blur-xl shadow-2xl overflow-hidden">
         <header className="px-6 py-4 border-b border-blue-700 bg-white/10 flex items-center justify-between">
           <div>
