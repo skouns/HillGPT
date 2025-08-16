@@ -168,6 +168,7 @@ function App() {
               placeholder="Congressional email address"
               className="w-full rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
               ref={inputRef}
+              autoComplete="email"
               required
             />
             <button
@@ -241,9 +242,9 @@ function App() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
-            autoComplete="off"
             className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
             ref={inputRef}
+            autoComplete="off"
           />
           <button
             type="submit"
