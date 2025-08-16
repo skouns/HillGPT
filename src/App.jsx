@@ -158,7 +158,7 @@ function App() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@cassidy.senate.gov"
+              placeholder="Official email address"
               className="w-full rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
               ref={inputRef}
               required
@@ -170,7 +170,7 @@ function App() {
               Verify & Enter
             </button>
           </form>
-          <p className="text-xs text-blue-300 mt-4">Allowed domain: cassidy.senate.gov</p>
+          <p className="text-xs text-blue-300 mt-4">Allowed Offices: Cassidy</p>
         </div>
       </div>
     );
