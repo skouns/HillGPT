@@ -62,6 +62,13 @@ function App() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  useEffect(() => {
+    const el = inputRef.current;
+    if (el && el.value && !el.dataset.touched) {
+      el.value = '';
+    }
+  }, []);
+
   function getDomain(addr='') {
     const match = String(addr).toLowerCase().match(/@([^@]+)$/);
     return match ? match[1] : '';
@@ -233,6 +240,12 @@ function App() {
           <div ref={messagesEndRef} />
         </main>
 
+        {/* Autofill bait for Safari */}
+        <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, overflow: 'hidden' }}>
+          <input type="text" name="email" autoComplete="email" />
+          <input type="text" name="name" autoComplete="name" />
+        </div>
+
         <form
           onSubmit={handleSubmit}
           autoComplete="off"
@@ -246,11 +259,10 @@ function App() {
             placeholder="Type a message..."
             className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
             ref={inputRef}
-            autoFocus
             autoComplete="new-password"
-            autoCorrect="off"
-            autoCapitalize="off"
-            spellCheck={false}
+            readOnly
+            onFocus={(e) => e.currentTarget.removeAttribute('readonly')}
+            onInput={(e) => { e.currentTarget.dataset.touched = '1'; }}
             name="chatMessage"
             id="chatMessage"
           />
