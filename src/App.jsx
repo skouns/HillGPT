@@ -239,7 +239,7 @@ function App() {
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg text-white font-semibold transition"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-800 rounded-lg text-white font-semibold transition"
           >
             Send
           </button>
