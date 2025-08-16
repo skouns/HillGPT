@@ -152,7 +152,7 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 text-white flex items-center justify-center px-4 py-6">
         <div className="w-full max-w-md rounded-xl border border-blue-700 bg-white/5 backdrop-blur-xl shadow-2xl overflow-hidden p-6">
           <h1 className="text-3xl font-bold mb-2">HillGPT Access</h1>
-          <p className="text-sm text-blue-200 mb-4">Restricted to Senator’s office staff. Verify with your office email.</p>
+          <p className="text-sm text-blue-200 mb-4">Restricted to congressional office staff. Verify with your office email.</p>
           <form onSubmit={handleVerify} className="space-y-3">
             <input
               type="email"
