@@ -235,17 +235,18 @@ function App() {
 
         <form
           onSubmit={handleSubmit}
-          autoComplete="off"
+          autoComplete="nope"
           className="flex items-center gap-3 px-6 py-4 border-t border-blue-700 bg-white/10"
         >
           <input
             type="text"
+            inputmode="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
             ref={inputRef}
-            autoComplete="new-chat"
+            autoComplete="nope"
             name="chat-message"
             id="chat-message"
           />
