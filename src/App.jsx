@@ -151,8 +151,8 @@ function App() {
     return (
       <div className="min-h-screen bg-[#fdfdf9] text-gray-900 flex items-center justify-center px-4 py-6">
         <div className="w-full max-w-md rounded-xl border border-blue-700 bg-blue-900/40 backdrop-blur-xl shadow-2xl overflow-hidden p-6">
-          <h1 className="text-3xl font-bold mb-2">HillGPT Access</h1>
-          <p className="text-sm mb-4">Restricted to congressional office staff. Verify with your office email.</p>
+          <h1 className="text-3xl text-white font-bold mb-2">HillGPT Access</h1>
+          <p className="text-sm text-white mb-4">Restricted to congressional office staff. Verify with your office email.</p>
           <form onSubmit={handleVerify} className="space-y-3">
             <input
               type="email"
@@ -170,7 +170,7 @@ function App() {
               Verify & Enter
             </button>
           </form>
-          <p className="text-xs mt-4">Allowed Offices: Cassidy</p>
+          <p className="text-xs text-white mt-4">Allowed Offices: Cassidy</p>
         </div>
       </div>
     );
@@ -213,7 +213,7 @@ function App() {
           {messages.map((msg, index) => (
             <div
               key={index}
-              className={`max-w-[50%] px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
+              className={`max-w-[25%] px-5 py-3 rounded-xl text-sm whitespace-pre-wrap ${
                 msg.sender === "user"
                   ? "ml-auto bg-blue-600 text-white shadow-lg"
                   : "mr-auto bg-blue-300 text-blue-900 shadow-md"
