@@ -34,44 +34,36 @@ function sanitizeAssistantText(s) {
   return s;
 }
 
-// Simple heuristic to classify request; can be replaced with a model-based classifier later
-function pickTier(userText = "", currentTier = "mini") {
-  // Map currentTier to numeric rank to prevent downgrade
-  const curRank = currentTier === "41" ? 6 : currentTier === "4o" ? 3 : 0;
-
-  let score = 0;
-
-  // Lower score for dataset search/general questions
-  const datasetKeywords = /\b(find|list|show|summarize|search|lookup)\b/i;
-  if (datasetKeywords.test(userText)) {
-    score += 0; // baseline low score
+async function classifyTier(userText) {
+  try {
+    const response = await client.chat.completions.create({
+      model: "gpt-4o-mini",
+      messages: [
+        {
+          role: "system",
+          content: `You are a classifier. Classify the following user message into one of these tiers:
+- mini: dataset query, fact lookup, summary, simple.
+- 4o: opinion, stance, tone, sentiment, mid-level reasoning.
+- 41: multi-issue analysis, complex synthesis, long-term implications.
+Respond with only one of: mini, 4o, 41.`
+        },
+        {
+          role: "user",
+          content: userText
+        }
+      ],
+      temperature: 0
+    });
+    const tierRaw = response.choices?.[0]?.message?.content || "";
+    const tier = tierRaw.trim();
+    if (tier === "mini" || tier === "4o" || tier === "41") {
+      return tier;
+    }
+    return "mini";
+  } catch (error) {
+    console.error("[classifyTier] Error classifying tier:", error);
+    return "mini";
   }
-
-  // Medium score for sentiment/discussion-level
-  const sentimentKeywords = /\b(feel|think|opinion|support|oppose|tone|sentiment|argue|stance|position)\b/i;
-  if (sentimentKeywords.test(userText)) {
-    score += 3;
-  }
-
-  // High score for complex multi-issue analysis
-  const multiIssuePattern = /(and|,).*?(and|,)/i;
-  if (multiIssuePattern.test(userText) && userText.split(/\s+/).length > 40) {
-    score += 6;
-  }
-
-  // Ensure score is at least current tier rank to avoid downgrade mid-thread
-  score = Math.max(score, curRank);
-
-  let tier;
-  if (score >= 8) {
-    tier = "41";
-  } else if (score >= 3) {
-    tier = "4o";
-  } else {
-    tier = "mini";
-  }
-  console.log(`[pickTier] Input: "${userText}", Score: ${score}, Chosen Tier: ${tier}`);
-  return tier;
 }
 
 function idForTier(tier) {
@@ -109,8 +101,10 @@ export default async function handler(req, res) {
     } else {
       // Otherwise, pick purely from the latest message content (allowing downgrade)
       // Use complexity hint as a nudge; fall back to heuristic
-      proposedFromHeuristic = pickTier(latestUserText, 'mini');
+      proposedFromHeuristic = await classifyTier(latestUserText);
       proposedFromHint = hintedByComplexity; // 'mini' or '4o'
+
+      console.log(`[classifyTier] Input: "${latestUserText}", Classified Tier: "${proposedFromHeuristic}"`);
 
       // Simple policy: if heuristic says '41', take it. Otherwise prefer the hint if it suggests '4o'.
       let chosen = proposedFromHeuristic;
