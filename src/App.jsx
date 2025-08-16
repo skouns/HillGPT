@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import './index.css';
 import axios from 'axios';
 
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
+
+  // Ref for chat input
+  const inputRef = useRef(null);
+  // Ref for auto-scrolling to bottom of messages
+  const messagesEndRef = useRef(null);
 
   // Persist a single Assistants API thread so the bot remembers context
   const [threadId, setThreadId] = useState(() => {
@@ -29,6 +34,16 @@ function App() {
       localStorage.setItem('hillgpt_model_tier', modelTier);
     }
   }, [threadId, modelTier]);
+
+  // Autofocus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  // Scroll to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // Frontend call that sends/receives the threadId
   async function talkToGPT(userMessage) {
@@ -117,6 +132,7 @@ function App() {
               {msg.text}
             </div>
           ))}
+          <div ref={messagesEndRef} />
         </main>
 
         <form
@@ -129,6 +145,7 @@ function App() {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type a message..."
             className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
+            ref={inputRef}
           />
           <button
             type="submit"
