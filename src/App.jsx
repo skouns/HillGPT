@@ -140,11 +140,18 @@ function App() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!input.trim()) return;
-    const newMessage = { sender: "user", text: input };
+    const content = input.trim();
+    if (!content) return;
+
+    const newMessage = { sender: "user", text: content };
+
+    // Optimistically render user message immediately
+    setMessages(prev => [...prev, newMessage]);
     setInput("");
-    const reply = await talkToGPT(input);
-    setMessages(prev => [...prev, newMessage, { sender: "assistant", text: reply }]);
+
+    // Fetch assistant reply and append when it arrives
+    const reply = await talkToGPT(content);
+    setMessages(prev => [...prev, { sender: "assistant", text: reply }]);
   };
 
   if (!verified) {
