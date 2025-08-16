@@ -36,27 +36,42 @@ function sanitizeAssistantText(s) {
 
 // Simple heuristic to classify request; can be replaced with a model-based classifier later
 function pickTier(userText = "", currentTier = "mini") {
-  // escalate-only; never downgrade from a higher tier
-  const cur = currentTier === "41" ? 2 : currentTier === "4o" ? 1 : 0;
+  // Map currentTier to numeric rank to prevent downgrade
+  const curRank = currentTier === "41" ? 6 : currentTier === "4o" ? 3 : 0;
 
-  const hasCompare = /\b(compare|contrast|versus|vs\.|trade[- ]offs?)\b/i.test(userText);
-  const longQ = userText.length > 600;
-  const sensitive = /(social security|medicare|appropriations|immigration|border|abortion|gun|foreign policy|defense)/i.test(userText);
-  const multiPart = /\?|\.|;/.test(userText) && (userText.match(/\?|\.|;/g) || []).length > 2;
+  let score = 0;
 
-  let tierScore = 0;
-  if (hasCompare) tierScore++;
-  if (longQ) tierScore++;
-  if (sensitive) tierScore++;
-  if (multiPart) tierScore++;
+  // Lower score for dataset search/general questions
+  const datasetKeywords = /\b(find|list|show|summarize|search|lookup)\b/i;
+  if (datasetKeywords.test(userText)) {
+    score += 0; // baseline low score
+  }
 
-  let proposed = tierScore >= 2 ? "4o" : "mini"; // default path
-  if (tierScore >= 3) proposed = "41"; // most complex
+  // Medium score for sentiment/discussion-level
+  const sentimentKeywords = /\b(feel|think|opinion|support|oppose|tone|sentiment|argue|stance|position)\b/i;
+  if (sentimentKeywords.test(userText)) {
+    score += 3;
+  }
 
-  // enforce escalate-only relative to currentTier
-  const propRank = proposed === "41" ? 2 : proposed === "4o" ? 1 : 0;
-  const rank = Math.max(cur, propRank);
-  return rank === 2 ? "41" : rank === 1 ? "4o" : "mini";
+  // High score for complex multi-issue analysis
+  const multiIssuePattern = /(and|,).*?(and|,)/i;
+  if (multiIssuePattern.test(userText) && userText.split(/\s+/).length > 40) {
+    score += 6;
+  }
+
+  // Ensure score is at least current tier rank to avoid downgrade mid-thread
+  score = Math.max(score, curRank);
+
+  let tier;
+  if (score >= 8) {
+    tier = "41";
+  } else if (score >= 3) {
+    tier = "4o";
+  } else {
+    tier = "mini";
+  }
+  console.log(`[pickTier] Input: "${userText}", Score: ${score}, Chosen Tier: ${tier}`);
+  return tier;
 }
 
 function idForTier(tier) {
@@ -101,6 +116,8 @@ export default async function handler(req, res) {
       }
       var nextTier = chosen; // may be 'mini', '4o', or '41'
     }
+
+    console.log(`[handler] Latest User Text: "${latestUserText}", Proposed Heuristic: "${proposedFromHeuristic}", Proposed Hint: "${hintedByComplexity}", Final Chosen Tier: "${nextTier}"`);
 
     const assistantIdForRun = idForTier(nextTier);
 
