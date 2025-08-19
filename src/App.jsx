@@ -28,6 +28,8 @@ function App() {
   // Ref for auto-scrolling to bottom of messages
   const messagesEndRef = useRef(null);
 
+  const [loading, setLoading] = useState(false);
+
   // Persist a single Assistants API thread so the bot remembers context
   const [threadId, setThreadId] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -148,7 +150,7 @@ function App() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const content = input.trim();
-    if (!content) return;
+    if (!content || loading) return;
 
     const newMessage = { sender: "user", text: content };
 
@@ -156,9 +158,16 @@ function App() {
     setMessages(prev => [...prev, newMessage]);
     setInput("");
 
-    // Fetch assistant reply and append when it arrives
-    const reply = await talkToGPT(content);
-    setMessages(prev => [...prev, { sender: "assistant", text: reply }]);
+    // Show thinking indicator
+    setLoading(true);
+
+    try {
+      // Fetch assistant reply and append when it arrives
+      const reply = await talkToGPT(content);
+      setMessages(prev => [...prev, { sender: "assistant", text: reply }]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!verified) {
@@ -237,6 +246,11 @@ function App() {
               {msg.text}
             </div>
           ))}
+          {loading && (
+            <div className="block w-fit max-w-[75%] break-words px-5 py-3 rounded-xl text-sm whitespace-pre-wrap self-start bg-blue-300 text-blue-900 shadow-md italic">
+              <span className="inline-flex items-center">Thinking<span className="animate-pulse">…</span></span>
+            </div>
+          )}
           <div ref={messagesEndRef} />
         </main>
 
@@ -271,9 +285,11 @@ function App() {
           />
           <button
             type="submit"
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-800 rounded-lg text-white font-semibold transition"
+            disabled={loading}
+            className={`px-4 py-2 rounded-lg text-white font-semibold transition ${loading ? 'bg-blue-600/60 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-800'}`}
+            aria-busy={loading}
           >
-            Send
+            {loading ? 'Sending…' : 'Send'}
           </button>
         </form>
       </div>
