@@ -264,16 +264,13 @@ function App() {
                 className="prose chat-prose prose-sm max-w-none"
                 components={{
                   ul: ({ node, ...props }) => (
-                    <ul className="list-disc pl-5 ml-1" {...props} />
+                    <ul className="list-disc" {...props} />
                   ),
                   ol: ({ node, ...props }) => (
-                    <ol className="list-decimal pl-5 ml-1" {...props} />
+                    <ol className="list-decimal" {...props} />
                   ),
                   li: ({ node, ...props }) => (
                     <li className="leading-relaxed pl-1" {...props} />
-                  ),
-                  p: ({ node, ...props }) => (
-                    <p className="my-1" {...props} />
                   ),
                   code: ({ node, inline, ...props }) =>
                     inline ? (
