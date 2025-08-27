@@ -17,48 +17,6 @@ function normalizeMarkdown(input = "") {
   return segments.map((seg, i) => (i % 2 === 1 ? seg : fix(seg))).join("");
 }
 
-// Remark plugin: collapse list items of the form
-// <li><p><strong>Title</strong></p><p>Description…</p></li>
-// into
-// <li><p><strong>Title</strong> — Description…</p></li>
-function remarkCollapseBulletTitle() {
-  return (tree) => {
-    const visit = (node) => {
-      if (!node || typeof node !== 'object') return;
-      if (Array.isArray(node.children)) {
-        // If this is a list item, attempt to collapse
-        if (node.type === 'listItem' && node.children.length >= 2) {
-          const first = node.children[0];
-          const second = node.children[1];
-          const isBoldTitleP =
-            first &&
-            first.type === 'paragraph' &&
-            Array.isArray(first.children) &&
-            first.children.length === 1 &&
-            first.children[0]?.type === 'strong';
-          const isDescP = second && second.type === 'paragraph' && Array.isArray(second.children);
-          if (isBoldTitleP && isDescP) {
-            node.children = [
-              {
-                type: 'paragraph',
-                children: [
-                  first.children[0],
-                  { type: 'text', value: ' — ' },
-                  ...second.children,
-                ],
-              },
-              ...node.children.slice(2),
-            ];
-          }
-        }
-        // Recurse
-        for (const child of node.children) visit(child);
-      }
-    };
-    visit(tree);
-  };
-}
-
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -301,19 +259,60 @@ function App() {
               }`}
             >
               <ReactMarkdown
-                remarkPlugins={[remarkGfm, remarkCollapseBulletTitle]}
+                remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
                 className="prose chat-prose prose-sm max-w-none"
                 components={{
                   ul: ({ node, ...props }) => (
-                    <ul className="list-disc" {...props} />
+                    <ul className="list-none pl-0 ml-0" {...props} />
                   ),
                   ol: ({ node, ...props }) => (
-                    <ol className="list-decimal" {...props} />
+                    <ol className="list-none pl-0 ml-0" {...props} />
                   ),
-                  li: ({ node, ...props }) => (
-                    <li className="leading-relaxed pl-1" {...props} />
-                  ),
+                  li: ({ node, children, ...props }) => {
+                    const kids = React.Children.toArray(children ?? props.children);
+
+                    // Helper: is <p><strong>Title</strong></p>
+                    const isBoldTitleP = (el) => {
+                      if (!React.isValidElement(el)) return false;
+                      if (el.type !== 'p') return false;
+                      const inner = React.Children.toArray(el.props.children).filter(Boolean);
+                      if (inner.length !== 1) return false;
+                      const only = inner[0];
+                      if (!React.isValidElement(only)) return false;
+                      return only.type === 'strong';
+                    };
+
+                    // If pattern matches: <li><p><strong>Title</strong></p><p>Description…</p>…</li>
+                    if (kids.length >= 2 && isBoldTitleP(kids[0])) {
+                      const titleP = kids[0];
+                      const descP  = kids[1];
+                      if (React.isValidElement(descP) && descP.type === 'p') {
+                        const titleStrong = React.Children.toArray(titleP.props.children)[0];
+                        const merged = (
+                          <p>
+                            {titleStrong}
+                            {" — "}
+                            {descP.props.children}
+                          </p>
+                        );
+                        const rest = kids.slice(2);
+                        return (
+                          <li className="leading-relaxed pl-0" {...props}>
+                            {merged}
+                            {rest}
+                          </li>
+                        );
+                      }
+                    }
+
+                    // Default rendering
+                    return (
+                      <li className="leading-relaxed pl-0" {...props}>
+                        {kids}
+                      </li>
+                    );
+                  },
                   code: ({ node, inline, ...props }) =>
                     inline ? (
                       <code className="bg-blue-900/20 rounded px-1 py-0.5" {...props} />
