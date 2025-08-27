@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import './index.css';
 import axios from 'axios';
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeRaw from "rehype-raw";
 
 function App() {
   const [messages, setMessages] = useState([]);
@@ -243,7 +246,13 @@ function App() {
                   : "self-start bg-blue-300 text-blue-900 shadow-md"
               }`}
             >
-              {msg.text}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]}
+                className="prose-sm max-w-none"
+              >
+                {msg.text}
+              </ReactMarkdown>
             </div>
           ))}
           {loading && (
