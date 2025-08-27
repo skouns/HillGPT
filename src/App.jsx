@@ -261,13 +261,13 @@ function App() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
-                className="prose prose-sm max-w-none prose-li:my-0.5 prose-p:my-0 prose-ul:my-1 prose-ol:my-1"
+                className="prose chat-prose prose-sm max-w-none"
                 components={{
                   ul: ({ node, ...props }) => (
-                    <ul className="list-disc pl-5 ml-1 space-y-1" {...props} />
+                    <ul className="list-disc pl-5 ml-1" {...props} />
                   ),
                   ol: ({ node, ...props }) => (
-                    <ol className="list-decimal pl-5 ml-1 space-y-1" {...props} />
+                    <ol className="list-decimal pl-5 ml-1" {...props} />
                   ),
                   li: ({ node, ...props }) => (
                     <li className="leading-relaxed pl-1" {...props} />
