@@ -5,6 +5,18 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 
+// Normalize sloppy markdown (fixes `-one`/`*one` ➜ `- one`, `1) item` ➜ `1. item`) without touching fenced code blocks
+function normalizeMarkdown(input = "") {
+  const fence = /(```[\s\S]*?```)/g; // capture fenced code blocks
+  const segments = String(input).split(fence);
+  const fix = (txt) => txt
+    // Insert space after leading - or * when glued to word
+    .replace(/(^|\n)[\t ]*([*-])(\S)/g, (m, pre, bullet, next) => `${pre}${bullet} ${next}`)
+    // Convert "1) text" to "1. text" at line starts
+    .replace(/(^|\n)[\t ]*(\d+)\)\s+/g, (m, pre, n) => `${pre}${n}. `);
+  return segments.map((seg, i) => (i % 2 === 1 ? seg : fix(seg))).join("");
+}
+
 function App() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -251,7 +263,7 @@ function App() {
                 rehypePlugins={[rehypeRaw]}
                 className="prose prose-sm max-w-none"
               >
-                {msg.text}
+                {normalizeMarkdown(msg.text)}
               </ReactMarkdown>
             </div>
           ))}
