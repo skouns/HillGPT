@@ -154,7 +154,6 @@ export default async function handler(req, res) {
         ? { tool_resources: { file_search: { vector_store_ids: [VECTOR_STORE_ID] } } }
         : {}),
       additional_instructions: `Follow these hard rules, in order of priority:\n1) Do NOT include filenames, internal IDs, or vector reference markers (e.g., {12:16\u2020Press_Releases.txt}).\n2) Do NOT invent labels or jargon; use plain, neutral language.\n3) Give a concise, policy-first answer.\n4) Sources line only: "Sources: Internal office dataset" or "Sources: None from internal dataset".\n5) If no internal files were used, do not imply that any were.\nBefore sending, self-check that you obeyed 1–5; if not, fix and then send.`,
-      temperature: 0.2,
       response_format: { type: "text" },
       // max_output_tokens: 700, // uncomment if you want to bound length
     });
