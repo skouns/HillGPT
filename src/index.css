@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tighter, consistent list spacing for chat markdown */
+.chat-prose ul,
+.chat-prose ol {
+  margin-top: 0.25rem;   /* 4px */
+  margin-bottom: 0.25rem;/* 4px */
+  padding-left: 1.25rem; /* 20px bullet indent fallback */
+}
+.chat-prose li {
+  margin-top: 0.125rem;  /* 2px */
+  margin-bottom: 0.125rem;/* 2px */
+}
+.chat-prose li > p {
+  margin-top: 0.125rem;  /* 2px under the title line */
+  margin-bottom: 0.125rem;
+}
+/* Remove extra space at the edges of list items */
+.chat-prose li > :first-child { margin-top: 0 !important; }
+.chat-prose li > :last-child  { margin-bottom: 0 !important; }
