@@ -249,7 +249,7 @@ function App() {
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
-                className="prose-sm max-w-none"
+                className="prose prose-sm max-w-none"
               >
                 {msg.text}
               </ReactMarkdown>
@@ -274,13 +274,11 @@ function App() {
           autoComplete="off"
           className="flex items-center gap-3 px-6 py-4 border-t border-blue-700 bg-white/10"
         >
-          <input
-            type="text"
-            inputMode="text"
+          <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Type a message..."
-            className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600"
+            placeholder="Type a message... (Shift+Enter for newline)"
+            className="flex-1 rounded-lg px-4 py-2 text-sm text-white bg-blue-800 placeholder-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 border border-blue-600 resize-none overflow-y-hidden"
             ref={inputRef}
             autoComplete="new-password"
             autoCorrect="off"
@@ -288,9 +286,20 @@ function App() {
             spellCheck={false}
             readOnly
             onFocus={(e) => e.currentTarget.removeAttribute('readonly')}
-            onInput={(e) => { e.currentTarget.dataset.touched = '1'; }}
+            onInput={(e) => {
+              e.currentTarget.dataset.touched = '1';
+              e.currentTarget.style.height = 'auto';
+              e.currentTarget.style.height = `${e.currentTarget.scrollHeight}px`;
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                e.currentTarget.form?.requestSubmit();
+              }
+            }}
             name="chatMessage"
             id="chatMessage"
+            rows={1}
           />
           <button
             type="submit"
