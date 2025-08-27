@@ -269,9 +269,50 @@ function App() {
                   ol: ({ node, ...props }) => (
                     <ol className="list-decimal" {...props} />
                   ),
-                  li: ({ node, ...props }) => (
-                    <li className="leading-relaxed pl-1" {...props} />
-                  ),
+                  li: ({ node, children, ...props }) => {
+                    const kids = React.Children.toArray(children ?? props.children);
+
+                    // Helper: is <p><strong>Title</strong></p>
+                    const isBoldTitleP = (el) => {
+                      if (!React.isValidElement(el)) return false;
+                      if (el.type !== 'p') return false;
+                      const inner = React.Children.toArray(el.props.children).filter(Boolean);
+                      if (inner.length !== 1) return false;
+                      const only = inner[0];
+                      if (!React.isValidElement(only)) return false;
+                      return only.type === 'strong';
+                    };
+
+                    // If pattern matches: <li><p><strong>Title</strong></p><p>Description…</p>…</li>
+                    if (kids.length >= 2 && isBoldTitleP(kids[0])) {
+                      const titleP = kids[0];
+                      const descP  = kids[1];
+                      if (React.isValidElement(descP) && descP.type === 'p') {
+                        const titleStrong = React.Children.toArray(titleP.props.children)[0];
+                        const merged = (
+                          <p>
+                            {titleStrong}
+                            {" — "}
+                            {descP.props.children}
+                          </p>
+                        );
+                        const rest = kids.slice(2);
+                        return (
+                          <li className="leading-relaxed pl-1" {...props}>
+                            {merged}
+                            {rest}
+                          </li>
+                        );
+                      }
+                    }
+
+                    // Default rendering
+                    return (
+                      <li className="leading-relaxed pl-1" {...props}>
+                        {kids}
+                      </li>
+                    );
+                  },
                   code: ({ node, inline, ...props }) =>
                     inline ? (
                       <code className="bg-blue-900/20 rounded px-1 py-0.5" {...props} />
